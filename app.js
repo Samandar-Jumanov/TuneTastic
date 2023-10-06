@@ -11,8 +11,7 @@ app.use(express.json())
 
 app.use(cors({
     origin:['http://localhost:3000/'],
-    methods : "*",
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods : "*"
 }))
 sequelize.sync().then(()=>{
     console.log('Models created ')
