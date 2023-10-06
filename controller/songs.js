@@ -14,7 +14,7 @@ const uploadSong = async (request , response , next ) =>{
          t =  await sequelize.transaction();
         const user = await Users.findOne({
             where : {
-                author 
+               username :  author 
             }
         })
 
@@ -46,7 +46,7 @@ const uploadSong = async (request , response , next ) =>{
         await user.addSongs(newSong , { transaction : t })
         await user.save()
         await t.commit()
-        
+
         return response.json({
             messaage :'Song uploaded ',
             song : newSong 
