@@ -3,12 +3,11 @@ const {Songs , Users } = require('../models/relations');
 const sequelize = require('../utils/db');
 
 const uploadSong = async (request , response , next ) =>{
-    const {songName , artist , genre , userId  , file  } = request.body 
-
+    const {songName , artist , genre , userId  } = request.body 
     let t;
     try {
          t = await sequelize.transaction();
-         const result = uploadFileToS3(file)
+         const result = uploadFileToS3(request.file)
          console.log(result)
 
         const newSong = await Songs.create({
