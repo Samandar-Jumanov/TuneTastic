@@ -32,18 +32,25 @@ const uploadFileToS3 = async (file) => {
       }),
     }).single('file');
 
-    const result = await new Promise((resolve, reject) => {
-      upload(file.request, file.response, (error) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve({ Location: file.request.file.location });
-        }
+    try{
+      const result = await new Promise((resolve, reject) => {
+        upload(file.request, file.response, (error) => {
+  
+          if (error) {
+            reject(error);
+          } else {
+            resolve({ Location: file.request.file.location });
+          }
+        });
       });
-    });
+      return { Location: result.Location };
+    }catch(error){
+      console.log(error)
 
-    return { Location: result.Location };
+    }
+
   } catch (error) {
+    console.log(error)
     throw error;
   }
 };
