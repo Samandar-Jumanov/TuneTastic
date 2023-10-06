@@ -8,27 +8,18 @@ const Songs = sequelize.define('song', {
         autoIncrement : true ,
         primaryKey : true
     },
-
-    songName : {
-        type : DataTypes.STRING ,
-        allowNull :false 
-    },
-    artist : {
-        type : DataTypes.STRING,
+     songId :{
+        type:DataTypes.STRING,
         allowNull : false 
-    },
-    genre : {
-        type : DataTypes.STRING,
-        allowNull : false 
-    },
-    song : {
-        type : DataTypes.STRING ,
-        allowNull : false 
-    },
-    userId : {
+     },
+     author:{
         type : DataTypes.INTEGER,
         allowNull : false 
-    }
+     },
+     userId : {
+        type : DataTypes.STRING,
+        allowNull : false 
+     }
 })
 
 module.exports = {

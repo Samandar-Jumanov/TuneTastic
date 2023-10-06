@@ -8,52 +8,26 @@ const secretKey = process.env.AWS_SECRET_KEY;
 const region = process.env.AWS_BUCKET_REGION;
 const bucketName = process.env.AWS_BUCKET_NAME;
 
-AWS.config.update({
+// AWS S3 configuration
+const s3 = new AWS.S3({
   accessKeyId: accessKey,
   secretAccessKey: secretKey,
   region: region
 });
 
-const s3 = new AWS.S3();
-
-const uploadFileToS3 = async (file) => {
-  try {
-    const upload = multer({
-      storage: multerS3({
-        s3,
-        bucket: bucketName,
-        contentType: multerS3.AUTO_CONTENT_TYPE,
-        key: function (req, file, callback) {
-          callback(null, `music/${Date.now().toString()}-${file.originalname}`);
-        },
-        metadata: function (req, file, callback) {
-          callback(null, { fieldName: file.fieldname });
-        },
-      }),
-    }).single('file');
-
-    if (!file || !file.request || !file.response) {
-      throw new Error('Invalid file object');
+// Multer configuration for file upload
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: bucketName,
+    acl: 'public-read',
+    metadata: function (req, file, cb) {
+      cb(null, { fieldName: file.fieldname });
+    },
+    key: function (req, file, cb) {
+      cb(null, "music/" + Date.now().toString() + '-' + file.originalname);
     }
+  })
+});
 
-    const result = await new Promise((resolve, reject) => {
-      upload(file.request, file.response, (error) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve({ Location: file.request.file.location });
-        }
-      });
-    });
-
-    return { Location: result.Location };
-  } catch (error) {
-    console.log(error);
-    throw error;
-  }
-};
-
-
-module.exports = {
-  uploadFileToS3,
-};
+module.exports = upload

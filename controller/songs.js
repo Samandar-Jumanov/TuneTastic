@@ -1,38 +1,60 @@
-const { uploadFileToS3} = require('../utils/s3')
-const {Songs , Users } = require('../models/relations');
-const sequelize = require('../utils/db');
+const AWS = require('aws-sdk')
+const fs = require('fs')
+const { Songs, Users } = require('../models/relations')
+const sequelize = require('../utils/db')
+
+
+
 
 const uploadSong = async (request , response , next ) =>{
-    const {songName , artist , genre , userId  } = request.body 
-    let t;
+    const {song , author } = request.body 
+ let t ;
+
     try {
-         t = await sequelize.transaction();
-         const result = uploadFileToS3(request.file)
-         console.log(result)
+         t =  await sequelize.transaction();
+        const user = await Users.findOne({
+            where : {
+                author 
+            }
+        })
 
+        if (!user){
+            return response.status(404).json({
+                message :'User not found'
+            })
+        }
+
+        const s3 = new AWS.S3()
+        const bucketName = process.env.AWS_BUCKET_NAME
+        const fileName = song 
+        const fileData =   fs.readFileSync(fileName)
+
+        const result = await s3.upload({
+            Bucket : bucketName,
+            Key : fileName,
+            Body : fileData,
+            ContentType: 'audio/mpeg',
+        })
+
+        const location = await result.Location
         const newSong = await Songs.create({
-          artist,
-          genre,
-          song: result.Location,
-          userId : userId , 
-          songName : songName 
-        } , { transaction : t });
-
-        
-        
-        const user = await Users.findByPk(userId , { transaction : t })
+            songId : location ,
+            author : author ,
+            userId : user.Id 
+        } , { transaction : t })
+    
         await user.addSongs(newSong , { transaction : t })
         await user.save()
-        await t.commit();
-        response.status(201).json({ success: true, message: 'Song uploaded successfully' });
-      } catch (error) {
+        await t.commit()
+    } catch (error) {
+        console.log(error)
         await t.rollback();
-        console.error('Error uploading file:', error);
         next(error)
-      }
+    }
 }
 
-module.exports = {
+
+
+module.exports ={
     uploadSong 
 }
-
