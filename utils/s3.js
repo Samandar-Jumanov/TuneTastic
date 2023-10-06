@@ -1,32 +1,47 @@
-const S3 = require('aws-sdk/clients/s3')
-require('dotenv').config()
-const fs = require('fs')
+const AWS = require('aws-sdk');
+const multer = require('multer');
+const multerS3 = require('multer-s3');
+require('dotenv').config();
 
-const acceskey= process.env.AWS_ACCES_KEY
-const secretKey = process.env.AWS_SECRET_KEY 
-const region = process.env.AWS_BUCKET_REGION
-const bucketName = process.env.AWS_BUCKETNAME
+const acceskey = process.env.AWS_ACCES_KEY;
+const secretKey = process.env.AWS_SECRET_KEY;
+const region = process.env.AWS_BUCKET_REGION;
+const bucketName = process.env.AWS_BUCKETNAME;
 
-const s3 = new S3({
-    region,    
-    acceskey,
-    secretKey,
-})
+AWS.config.update({
+  accessKeyId: acceskey,
+  secretAccessKey: secretKey,
+  region: region
+});
 
+const s3 = new AWS.S3();
 
-function uploadFile(file){
-    const uploadPath = '../uploads/' + file.filename;
-    const fileStream = fs.createReadStream(uploadPath)
+const uploadFileToS3 = (file) => {
+  return new Promise((resolve, reject) => {
+    const upload = multer({
+      storage: multerS3({
+        s3,
+        bucket: bucketName,
+        contentType: multerS3.AUTO_CONTENT_TYPE,
+        key: function (req, file, callback) {
+          callback(null, `music/${Date.now().toString()}-${file.originalname}`);
+        },
+        metadata: function (req, file, callback) {
+          callback(null, { fieldName: file.fieldname });
+        },
+      }),
+    }).single(file.fieldname);
 
-    const uploadParams = {
-      Bucket :    bucketName , 
-      Body : fileStream,
-      Key : file.filename 
-    }
-    return s3.upload(uploadParams).promise()
-}
-
+    upload(file.req, file.res, (error) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve({ fileLocation: file.req.file.location });
+      }
+    });
+  });
+};
 
 module.exports = {
-    uploadFile
-}
+  uploadFileToS3,
+};
