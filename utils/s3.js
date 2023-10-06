@@ -33,11 +33,11 @@ const uploadFileToS3 = async (file) => {
     }).single('file');
 
     const result = await new Promise((resolve, reject) => {
-      upload(file.req, file.res, (error) => {
+      upload(file.request, file.response, (error) => {
         if (error) {
           reject(error);
         } else {
-          resolve({ Location: file.req.file.location });
+          resolve({ Location: file.request.file.location });
         }
       });
     });
