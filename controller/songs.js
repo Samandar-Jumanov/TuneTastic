@@ -46,6 +46,12 @@ const uploadSong = async (request , response , next ) =>{
         await user.addSongs(newSong , { transaction : t })
         await user.save()
         await t.commit()
+        
+        return response.json({
+            messaage :'Song uploaded ',
+            song : newSong 
+        })
+
     } catch (error) {
         console.log(error)
         await t.rollback();
