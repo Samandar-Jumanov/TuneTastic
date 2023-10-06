@@ -9,11 +9,12 @@ const uploadSong = async (request , response , next ) =>{
     try {
          t = await sequelize.transaction();
          const result = uploadFileToS3(file)
+         console.log(result)
 
         const newSong = await Songs.create({
           artist,
           genre,
-          song: result.Location ,
+          song: result.Location,
           userId : userId , 
           songName : songName 
         } , { transaction : t });
