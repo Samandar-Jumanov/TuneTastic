@@ -6,8 +6,9 @@ const { authToken } = require('../utils/authToken')
 
 
 
-songsRouter.post('/upload-song', authRole , authToken , upload.single('file'), songsController.uploadSong )
+songsRouter.post('/upload-song',  upload.single('file'), songsController.uploadSong )
 
 module.exports ={
     songsRouter 
 }
+//authRole , authToken ,
