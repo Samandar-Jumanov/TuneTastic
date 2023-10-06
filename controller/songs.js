@@ -2,7 +2,7 @@ const AWS = require('aws-sdk')
 const fs = require('fs')
 const { Songs, Users } = require('../models/relations')
 const sequelize = require('../utils/db')
-
+const multer =require('multer')
 
 
 
@@ -11,6 +11,25 @@ const uploadSong = async (request , response , next ) =>{
  let t ;
 
     try {
+        const upload = multer({ dest: 'uploads/' });
+
+        upload.single('music')((err)=>{
+            if (err) {
+                console.error('Error uploading file:', err);
+                res.status(500).send('Error uploading file');
+                return;
+              }
+
+              if (!req.file) {
+                  res.status(400).send('No file uploaded');
+                  return;
+                }
+
+                console.log('File uploaded to uploads ')
+        })
+
+        
+
          t =  await sequelize.transaction();
         const user = await Users.findOne({
             where : {
@@ -27,7 +46,7 @@ const uploadSong = async (request , response , next ) =>{
         const s3 = new AWS.S3()
         const bucketName = process.env.AWS_BUCKET_NAME
         const fileName = song 
-        const fileData =   fs.readFileSync(fileName)
+        const fileData =  fs.readFileSync(fileName)
 
         const result = await s3.upload({
             Bucket : bucketName,
