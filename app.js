@@ -1,7 +1,7 @@
 const express = require('express')
 const sequelize = require('./utils/db')
 const { usersRouter } = require('./routes/users')
-const { songRouter } = require('./routes/songs')
+const { songsRouter } = require('./routes/songs')
 const app = express()
 
 //Connect database
@@ -15,7 +15,7 @@ sequelize.sync().then(()=>{
 })
 
 app.use('/api/users', usersRouter)
-app.use('/api/songs', songRouter)
+app.use('/api/songs', songsRouter)
 
 
 app.listen(3001 , ()=>{
