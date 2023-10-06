@@ -19,7 +19,7 @@ const SignUp = async (request , response , next ) =>{
             })
         }
 
-        const hashedPassword = bcrypt.hash(password , 10 )
+        const hashedPassword =await  bcrypt.hash(password , 10 )
 
         const newUser= await Users.create({
             username : username , 
@@ -69,7 +69,7 @@ const Login = async (request , response , next ) =>{
             })
         }
 
-        const isCorrectPassword = bcrypt.compare(password , exisitingUser.password)
+        const isCorrectPassword =  await bcrypt.compare(password , exisitingUser.password)
 
         if(!isCorrectPassword){
             return response.status(403).json({
