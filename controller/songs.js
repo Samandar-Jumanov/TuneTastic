@@ -1,4 +1,4 @@
-// const { uploadFileToS3} = require('../utils/s3')
+const { uploadFileToS3} = require('../utils/s3')
 const {Songs , Users } = require('../models/relations');
 const sequelize = require('../utils/db');
 
@@ -8,7 +8,7 @@ const uploadSong = async (request , response , next ) =>{
     let t;
     try {
          t = await sequelize.transaction();
-        //  const result = uploadFileToS3(file)
+         const result = uploadFileToS3(file)
 
         const newSong = await Songs.create({
           artist,
