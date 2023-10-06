@@ -32,28 +32,27 @@ const uploadFileToS3 = async (file) => {
       }),
     }).single('file');
 
-    try{
-      const result = await new Promise((resolve, reject) => {
-        upload(file.request, file.response, (error) => {
-  
-          if (error) {
-            reject(error);
-          } else {
-            resolve({ Location: file.request.file.location });
-          }
-        });
-      });
-      return { Location: result.Location };
-    }catch(error){
-      console.log(error)
-
+    if (!file || !file.request || !file.response) {
+      throw new Error('Invalid file object');
     }
 
+    const result = await new Promise((resolve, reject) => {
+      upload(file.request, file.response, (error) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve({ Location: file.request.file.location });
+        }
+      });
+    });
+
+    return { Location: result.Location };
   } catch (error) {
-    console.log(error)
+    console.log(error);
     throw error;
   }
 };
+
 
 module.exports = {
   uploadFileToS3,
