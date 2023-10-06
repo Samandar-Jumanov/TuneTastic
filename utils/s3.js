@@ -30,7 +30,7 @@ const uploadFileToS3 = async (file) => {
           callback(null, { fieldName: file.fieldname });
         },
       }),
-    }).single(file.fieldname);
+    }).single('file');
 
     const result = await new Promise((resolve, reject) => {
       upload(file.req, file.res, (error) => {
