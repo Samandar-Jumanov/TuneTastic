@@ -8,12 +8,16 @@ const Songs = sequelize.define('song', {
         autoIncrement : true ,
         primaryKey : true
     },
-     songId :{
+    title :{
+        type:DataTypes.STRING,
+        allowNull : false 
+    },
+    s3Key :{
         type:DataTypes.STRING,
         allowNull : false 
      },
-     author:{
-        type : DataTypes.INTEGER,
+     artist:{
+        type : DataTypes.STRING,
         allowNull : false 
      },
      userId : {

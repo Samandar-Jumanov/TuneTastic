@@ -49,12 +49,12 @@ const uploadSong =  async  (request, response , next ) => {
 
      const newSong = await Songs.create({
       title: title,
-      artist: artist,
       s3Key: s3Key,
+      artist: artist,
       userId: userId,
     } , { transaction : t });
     
-    await user.addSongs(newSong)
+    await user.addSongs(newSong , {transaction : t })
     await user.save()
     await t.commit();
 
