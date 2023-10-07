@@ -39,13 +39,12 @@ const uploadSong =  async  (request, response , next ) => {
     const songId =` ${userId}/${uniqueName}_${Date.now()}`;
     const s3Key = `music/${songId}.mp3`;
 
-    const params = {
+   
+    await s3.upload({
       Bucket: S3_BUCKET_NAME,
       Key: s3Key,
       Body: file.buffer,
-    };
-
-    await s3.upload(params).promise();
+    }).promise();
 
      const newSong = await Songs.create({
       title: title,
