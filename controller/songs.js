@@ -5,7 +5,7 @@ const { Users, Songs } = require('../models/relations');
 const sequelize = require('../utils/db');
 
 const storage = multer.memoryStorage();
-
+const AWS_SDK_LOAD_CONFIG =1 
 const upload = multer({
   storage: storage,
   limits: {
@@ -28,9 +28,11 @@ const uploadSong = async (request, response, next) => {
     }
 
     const s3 = new AWS.S3({
-      accessKeyId: process.env.AWS_ACCES_KEY,
-      secretAccesKey: process.env.AWS_SECRET_KEY,
+      accessKeyId: process.env.AWS_ACCESS_KEY,
+      secretAccessKey: process.env.AWS_SECRET_KEY,
+      region: process.env.AWS_BUCKET_REGION
     });
+
     const S3_BUCKET_NAME = process.env.AWS_BUCKET_NAME;
     const uniqueName = uuid.v4();
 
