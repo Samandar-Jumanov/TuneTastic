@@ -60,3 +60,8 @@ const uploadSong =  async  (request, response , next ) => {
   }
 }
 
+
+module.exports =  {
+  uploadSong,
+  upload
+}
