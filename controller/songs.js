@@ -29,7 +29,7 @@ const uploadSong = async (request, response, next) => {
 
     const s3 = new AWS.S3({
       accessKeyId: process.env.AWS_ACCES_KEY,
-      secretAccessKey: process.env.AWS_BUCKETNAME,
+      secretAccesKey: process.env.AWS_SECRET_KEY,
     });
     const S3_BUCKET_NAME = process.env.AWS_BUCKET_NAME;
     const uniqueName = uuid.v4();
