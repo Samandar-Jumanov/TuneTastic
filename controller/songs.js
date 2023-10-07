@@ -17,6 +17,10 @@ const uploadSong = async (request, response, next) => {
   const { userId, artist, title, file } = request.body;
 
   let t;
+
+  const s3 = new AWS.S3();
+  const uniqueName = uuid.v4();
+  
   try {
     t = await sequelize.transaction();
     const user = await Users.findByPk(userId);
@@ -27,23 +31,15 @@ const uploadSong = async (request, response, next) => {
       });
     }
 
-    const s3 = new AWS.S3({
-      accessKeyId: process.env.AWS_ACCESS_KEY,
-      secretAccessKey: process.env.AWS_SECRET_KEY,
-      region: process.env.AWS_BUCKET_REGION
-    });
-
-    const S3_BUCKET_NAME = process.env.AWS_BUCKET_NAME;
-    const uniqueName = uuid.v4();
 
     const songId = ` ${userId}/${uniqueName}_${Date.now()}`;
     const s3Key = `music/${songId}.mp3`;
 
     await s3
       .putObject({
-        Bucket: S3_BUCKET_NAME,
+        Bucket: process.env.AWS_BUCKET_NAME,
         Key: s3Key,
-        Body: file, // Assign the file directly to the Body parameter
+        Body: file,
       })
       .promise();
 
