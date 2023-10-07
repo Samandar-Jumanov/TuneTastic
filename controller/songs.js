@@ -1,85 +1,62 @@
-const AWS = require('aws-sdk')
-const fs = require('fs')
-const { Songs, Users } = require('../models/relations')
-const sequelize = require('../utils/db')
-const multer =require('multer')
+const multer = require('multer');
+const AWS = require('aws-sdk');
+const uuid = require('uuid')
+const {Users, Songs} = require('../models/relations');
+const sequelize = require('../utils/db');
+
+// Configure multer for handling file uploads
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 
+const uploadSong =  async  (request, response , next ) => {
+    const {userId , artist , title , file  } = request.body 
 
-const uploadSong = async (request , response , next ) =>{
-    const {song , author } = request.body 
- let t ;
+    let t ; 
+  try {
+    t = await sequelize.transaction();
+    const user = await Users.findByPk(userId)
 
-    try {
-        const upload = multer({ dest: 'uploads/' });
-
-        upload.single('music')((err)=>{
-            if (err) {
-                console.error('Error uploading file:', err);
-                res.status(500).send('Error uploading file');
-                return;
-              }
-
-              if (!req.file) {
-                  res.status(400).send('No file uploaded');
-                  return;
-                }
-
-                console.log('File uploaded to uploads ')
+    if(!user){
+        return response.status(404).json({
+            message :'User not found '
         })
-
-        
-
-         t =  await sequelize.transaction();
-        const user = await Users.findOne({
-            where : {
-               username :  author 
-            }
-        })
-
-        if (!user){
-            return response.status(404).json({
-                message :'User not found'
-            })
-        }
-
-        const s3 = new AWS.S3()
-        const bucketName = process.env.AWS_BUCKET_NAME
-        const fileName = song 
-        const fileData =  fs.readFileSync(fileName)
-
-        const result = await s3.upload({
-            Bucket : bucketName,
-            Key : fileName,
-            Body : fileData,
-            ContentType: 'audio/mpeg',
-        })
-
-        const location = await result.Location
-        const newSong = await Songs.create({
-            songId : location ,
-            author : author ,
-            userId : user.Id 
-        } , { transaction : t })
-    
-        await user.addSongs(newSong , { transaction : t })
-        await user.save()
-        await t.commit()
-
-        return response.json({
-            messaage :'Song uploaded ',
-            song : newSong 
-        })
-
-    } catch (error) {
-        console.log(error)
-        await t.rollback();
-        next(error)
     }
+
+    const s3 = new AWS.S3({
+        accessKeyId: process.env.AWS_ACCES_KEY,
+        secretAccessKey: process.env.AWS_BUCKETNAME,
+      });
+      const S3_BUCKET_NAME = process.env.AWS_BUCKET_NAME;
+      const uniqueName = uuid.v4()
+
+    const songId =` ${userId}/${uniqueName}_${Date.now()}`;
+    const s3Key = `music/${songId}.mp3`;
+
+    const params = {
+      Bucket: S3_BUCKET_NAME,
+      Key: s3Key,
+      Body: file.buffer,
+    };
+
+    await s3.upload(params).promise();
+
+     const newSong = await Songs.create({
+      title: title,
+      artist: artist,
+      s3Key: s3Key,
+      userId: userId,
+    } , { transaction : t });
+    
+    await user.addSongs(newSong)
+    await user.save()
+    await t.commit();
+
+    response.status(200).json({ message: 'Song uploaded successfully' });
+  } catch (error) {
+    console.error(error);
+    await t.rollback();
+    next(error)
+  }
 }
 
-
-
-module.exports ={
-    uploadSong 
-}
