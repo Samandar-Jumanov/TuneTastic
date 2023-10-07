@@ -21,7 +21,7 @@ const Songs = sequelize.define('song', {
         allowNull : false 
      },
      userId : {
-        type : DataTypes.STRING,
+        type : DataTypes.INTEGER,
         allowNull : false 
      }
 })
