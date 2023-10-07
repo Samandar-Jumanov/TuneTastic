@@ -1,26 +1,24 @@
-const multer = require('multer');
-const AWS = require('aws-sdk');
-const uuid = require('uuid');
+const {S3Client , PutObjectCommand} = require('@aws-sdk/client-s3');
 const { Users, Songs } = require('../models/relations');
+const uuid = require('uuid');
 const sequelize = require('../utils/db');
-
-const storage = multer.memoryStorage();
-const AWS_SDK_LOAD_CONFIG =1 
-const upload = multer({
-  storage: storage,
-  limits: {
-    fieldSize: Infinity,
-  },
-});
+require('dotenv').config()
 
 const uploadSong = async (request, response, next) => {
-  const { userId, artist, title, file } = request.body;
+  const { userId, artist, title } = request.body;
+  const file = request.file 
 
   let t;
-
-  const s3 = new AWS.S3();
   const uniqueName = uuid.v4();
-  
+
+  const s3 = new S3Client({
+    region:process.env.AWS_BUCKET_REGION,
+    credentials :{
+      accessKeyId : process.env.AWS_ACCES_KEY,
+      secretAccessKey : process.env.AWS_SECRET_KEY
+    }
+  });
+
   try {
     t = await sequelize.transaction();
     const user = await Users.findByPk(userId);
@@ -35,13 +33,14 @@ const uploadSong = async (request, response, next) => {
     const songId = ` ${userId}/${uniqueName}_${Date.now()}`;
     const s3Key = `music/${songId}.mp3`;
 
-    await s3
-      .putObject({
+    const uploadParams = {
         Bucket: process.env.AWS_BUCKET_NAME,
+        Body: file.buffer,
         Key: s3Key,
-        Body: file,
-      })
-      .promise();
+        ContentType :file.mimetype
+      }
+
+    await s3.send(new PutObjectCommand(uploadParams)) //upload to aws bucket 
 
     const newSong = await Songs.create(
       {
@@ -53,11 +52,12 @@ const uploadSong = async (request, response, next) => {
       { transaction: t }
     );
 
-    await user.addSongs(newSong, { transaction: t });
-    await user.save();
-    await t.commit();
+    // await user.addSongs(newSong, { transaction: t });
+    // await user.save();
+    // await t.commit();
 
-    response.status(200).json({ message: 'Song uploaded successfully' });
+    response.status(200).json({ message: 'Song uploaded successfully' , newSong });
+
   } catch (error) {
     console.error(error);
     await t.rollback();
@@ -67,5 +67,7 @@ const uploadSong = async (request, response, next) => {
 
 module.exports = {
   uploadSong,
-  upload,
 };
+
+
+
