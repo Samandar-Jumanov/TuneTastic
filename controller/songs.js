@@ -40,7 +40,7 @@ const uploadSong = async (request, response, next) => {
     const s3Key = `music/${songId}.mp3`;
 
     await s3
-      .upload({
+      .putObject({
         Bucket: S3_BUCKET_NAME,
         Key: s3Key,
         Body: file, // Assign the file directly to the Body parameter
