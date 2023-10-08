@@ -11,9 +11,15 @@ const addToListenedMusic = async (request ,response , next ) =>{
         const song = await Songs.findByPk(songId)
         const user = await Users.findByPk(userId)
 
-        if(!song  || !user){
+        if(!song ){
             return response.status(404).json({
-                message :' Song  or user not found '
+                message :' Song  not found '
+            })
+        }
+
+        if(!user ){
+            return response.status(404).json({
+                message :' User  not found '
             })
         }
 
@@ -28,7 +34,7 @@ const addToListenedMusic = async (request ,response , next ) =>{
         await user.addListenedMusic(addedSong , {transaction : t })
         await user.save();
         await t.commit();
-        
+
         return response.status(201).json({
             message :'Succes'
         })
