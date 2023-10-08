@@ -58,7 +58,6 @@ const getUserListeningHistory = async (request , response , next ) =>{
         // }
 
         const userListeningHistory = await user.getListenedMusic()
-        
         return response.json({
             userListeningHistory : userListeningHistory
         })
