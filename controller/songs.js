@@ -62,7 +62,6 @@ const getAllSongs = async (request , response , next ) =>{
     const allSongs = await Songs.findAll()
 
     for( const song of  allSongs){
-
       const params = {
         Bucket : process.env.AWS_BUCKET_NAME,
         Key : song.s3Key
@@ -70,7 +69,12 @@ const getAllSongs = async (request , response , next ) =>{
       const command = new GetObjectCommand(params);
       const url = await getSignedUrl(s3, command, { expiresIn: 3600 })   
       song.s3Key = url 
+
     }
+
+    return response.status(200).json({
+      allSongs : allSongs
+    })
 
   } catch (error) {
     console.log(error)
