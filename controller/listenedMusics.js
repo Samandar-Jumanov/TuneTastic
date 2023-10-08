@@ -77,7 +77,7 @@ const deleteListenedMusic = async (request, response, next) => {
 
       const user = await Users.findByPk(userId , { transaction : t });
       const listenedSong = await 
-      ListenedMusic.findOne({ where: { id: songId, userId: 1} } , { transaction : t });
+      ListenedMusic.findOne({ where: { Id: songId, userId: 1} } , { transaction : t });
   
       if (!user || !listenedSong) {
         return response.status(404).json({ message: 'User or music not found' });
