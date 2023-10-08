@@ -76,18 +76,8 @@ const deleteListenedMusic = async (request, response, next) => {
       t = await sequelize.transaction();
       const user = await Users.findByPk(userId, { transaction: t });
   
-      const listenedMusic = await ListenedMusic.findByPk(songId, {
-        where: {
-          userId: userId,
-        },
-        transaction: t,
-      });
-  
-     
-  
+      const listenedMusic = await ListenedMusic.findByPk(songId)
       await user.removeListenedMusic(listenedMusic, { transaction: t });
-      await listenedMusic.destroy({ transaction: t });
-  
       await user.save();
       await t.commit();
   
