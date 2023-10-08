@@ -1,7 +1,8 @@
-const {S3Client , PutObjectCommand} = require('@aws-sdk/client-s3');
+const {S3Client , PutObjectCommand , GetObjectCommand} = require('@aws-sdk/client-s3');
 const { Users, Songs } = require('../models/relations');
 const uuid = require('uuid');
 const sequelize = require('../utils/db');
+const  { getSignedUrl }  = require("@aws-sdk/s3-request-presigner");
 require('dotenv').config()
 
 const s3 = new S3Client({
@@ -27,12 +28,10 @@ const uploadSong = async (request, response, next) => {
       });
     }
 
-    const songId = `${userId}/${uniqueName}_${Date.now()}`;
-
     const uploadParams = {
         Bucket: process.env.AWS_BUCKET_NAME,
         Body: file.buffer,
-        Key: songId,
+        Key: uniqueName + "_" + Date.now() + "_" + file.originalname,
       }
 
     await s3.send(new PutObjectCommand(uploadParams)) //upload to aws bucket 
@@ -59,22 +58,30 @@ const uploadSong = async (request, response, next) => {
 };
 
 const getAllSongs = async (request , response , next ) =>{
-
   try {
     const allSongs = await Songs.findAll()
 
-    for( const songs of  allSongs){
+    for( const song of  allSongs){
 
-
+      const params = {
+        Bucket : process.env.AWS_BUCKET_NAME,
+        Key : song.s3Key
+      }
+      const command = new GetObjectCommand(params);
+      const url = await getSignedUrl(s3, command, { expiresIn: 3600 })   
+      song.s3Key = url 
     }
-    
+
   } catch (error) {
-    
+    console.log(error)
+    next(error)
   }
 }
 
+
 module.exports = {
   uploadSong,
+  getAllSongs
 };
 
 
