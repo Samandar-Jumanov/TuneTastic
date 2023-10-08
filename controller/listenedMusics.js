@@ -73,24 +73,31 @@ const deleteListenedMusic = async (request, response, next) => {
   
     let t;
     try {
-        t = await sequelize.transaction();
-      const user = await Users.findByPk(userId , { transaction : t });
-
-    const listenedMusic =  await ListenedMusic.findByPk(songId);
-    await user.removeListenedMusic(listenedMusic , { transaction : t });
-    await listenedMusic.destroy();
-
-      if (!user || !listenedSong) {
+      t = await sequelize.transaction();
+      const user = await Users.findByPk(userId, { transaction: t });
+  
+      const listenedMusic = await ListenedMusic.findByPk(songId, {
+        where: {
+          userId: userId,
+        },
+        transaction: t,
+      });
+  
+      if (!user || !listenedMusic) {
         return response.status(404).json({ message: 'User or music not found' });
       }
+  
+      await user.removeListenedMusic(listenedMusic, { transaction: t });
+      await listenedMusic.destroy({ transaction: t });
+  
       await user.save();
       await t.commit();
-
+  
       response.json({ message: 'Listened music deleted successfully' });
     } catch (error) {
-        await t.rollback();
-        console.log(error);
-        next(error);
+      await t.rollback();
+      console.log(error);
+      next(error);
     }
   };
 
