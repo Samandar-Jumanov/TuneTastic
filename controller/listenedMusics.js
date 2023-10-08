@@ -45,7 +45,12 @@ const getUserListeningHistory = async (request , response , next ) =>{
     const {userId} = request.body 
 
     try {
-        const user = await Users.findByPk(userId)
+        const user = await Users.findByPk(userId , {
+            include : [
+                {model : ListenedMusic , as :'listenedMusic'}
+            ]
+        })
+
         // if(!user || !userId){
         //     return response.json({
         //         message :'User required'
@@ -53,6 +58,7 @@ const getUserListeningHistory = async (request , response , next ) =>{
         // }
 
         const userListeningHistory = await user.getListenedMusic()
+        
         return response.json({
             userListeningHistory : userListeningHistory
         })
