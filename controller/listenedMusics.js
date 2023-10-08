@@ -11,11 +11,11 @@ const addToListenedMusic = async (request ,response , next ) =>{
         const song = await Songs.findByPk(songId)
         const user = await Users.findByPk(userId)
 
-        // if(!song  || !user){
-        //     return response.status(404).json({
-        //         message :' Song  or user not found '
-        //     })
-        // }
+        if(!song  || !user){
+            return response.status(404).json({
+                message :' Song  or user not found '
+            })
+        }
 
         const addedSong = await ListenedMusic.create({
            title: "song.title",
@@ -51,11 +51,11 @@ const getUserListeningHistory = async (request , response , next ) =>{
             ]
         })
 
-        // if(!user || !userId){
-        //     return response.json({
-        //         message :'User required'
-        //     })
-        // }
+        if(!user || !userId){
+            return response.json({
+                message :'User required'
+            })
+        }
 
         const userListeningHistory = await user.getListenedMusic()
         return response.json({
@@ -74,17 +74,18 @@ const deleteListenedMusic = async (request, response, next) => {
     let t;
     try {
         t = await sequelize.transaction();
+      const song = await Songs.findByPk(songId)
 
       const user = await Users.findByPk(userId , { transaction : t });
-      const listenedSong = await 
-      ListenedMusic.findOne({ where: { Id: songId, userId: 1} } , { transaction : t });
-  
+      const listenedSong = await ListenedMusic.findOne(song ,{ transaction : t });
+
       if (!user || !listenedSong) {
         return response.status(404).json({ message: 'User or music not found' });
       }
-  
+
       await user.removeListenedMusic(listenedSong , { transaction : t });
       await listenedSong.destroy();
+      
       await user.save();
       await t.commit();
 
