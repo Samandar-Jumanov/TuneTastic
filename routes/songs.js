@@ -4,7 +4,7 @@ const { authRole } = require('../utils/authRole')
 const { authToken } = require('../utils/authToken')
 const {upload} = require('../utils/multer')
 
-songsRouter.post('/upload-song',  upload.single('file'),  songsController.uploadSong )
+songsRouter.post('/upload-song',  upload.single('audio'),  songsController.uploadSong )
 
 module.exports ={
     songsRouter 
