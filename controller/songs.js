@@ -37,7 +37,7 @@ const uploadSong = async (request, response, next) => {
     await s3.send(new PutObjectCommand(uploadParams)) //upload to aws bucket 
     const newSong = await Songs.create({
         title: title,
-        s3Key: songId,
+        s3Key: uniqueName + "_" + Date.now() + "_" + file.originalname,
         artist: artist,
         userId: userId,
       },
