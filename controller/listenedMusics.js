@@ -11,17 +11,18 @@ const addToListenedMusic = async (request ,response , next ) =>{
         const song = await Songs.findByPk(songId)
         const user = await Users.findByPk(userId)
 
-        if(!song  || !user){
-            return response.status(404).json({
-                message :' Song  or user not found '
-            })
-        }
+        // if(!song  || !user){
+        //     return response.status(404).json({
+        //         message :' Song  or user not found '
+        //     })
+        // }
 
         const addedSong = await ListenedMusic.create({
            title: "song.title",
            userId : "song.userId",
            s3Key : "song.s3Key",
            artist : "song.artist"
+
         } , {transaction : t })
 
         await user.addListenedMusic(addedSong , {transaction : t })
