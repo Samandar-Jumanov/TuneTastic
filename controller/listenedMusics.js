@@ -3,7 +3,7 @@ const sequelize = require("../utils/db");
 
 
 const addToListenedMusic = async (request ,response , next ) =>{
-    const {songId , userId } = request.params 
+    const {songId , userId } = request.body 
     
     let t ;
     try {
