@@ -77,15 +77,12 @@ const deleteListenedMusic = async (request, response, next) => {
       const song = await Songs.findByPk(songId)
 
       const user = await Users.findByPk(userId , { transaction : t });
-      await user.removeListenedMusic(listenedSong , { transaction : t });
-      const listenedSong = await ListenedMusic.destroy(song ,{ transaction : t });
+      await ListenedMusic.destroy(song ,{ transaction : t });
+      await user.removeListenedMusic(song , { transaction : t });
 
       if (!user || !listenedSong) {
         return response.status(404).json({ message: 'User or music not found' });
       }
-
-      await listenedSong.destroy();
-
       await user.save();
       await t.commit();
 
