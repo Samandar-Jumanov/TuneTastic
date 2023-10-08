@@ -83,9 +83,7 @@ const deleteListenedMusic = async (request, response, next) => {
         transaction: t,
       });
   
-      if (!user || !listenedMusic) {
-        return response.status(404).json({ message: 'User or music not found' });
-      }
+     
   
       await user.removeListenedMusic(listenedMusic, { transaction: t });
       await listenedMusic.destroy({ transaction: t });
