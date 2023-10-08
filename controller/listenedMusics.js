@@ -18,7 +18,10 @@ const addToListenedMusic = async (request ,response , next ) =>{
         // }
 
         const addedSong = await ListenedMusic.create({
-            song
+           title:song.title,
+           userId : song.userId,
+           s3Key : song.s3Key,
+           artist : song.artist
         } , {transaction : t })
 
         await user.addListenedMusic(addedSong , {transaction : t })
