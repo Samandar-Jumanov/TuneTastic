@@ -46,11 +46,11 @@ const getUserListeningHistory = async (request , response , next ) =>{
 
     try {
         const user = await Users.findByPk(userId)
-        if(!user || !userId){
-            return response.json({
-                message :'User required'
-            })
-        }
+        // if(!user || !userId){
+        //     return response.json({
+        //         message :'User required'
+        //     })
+        // }
 
         const userListeningHistory = await user.getListenedMusic()
         return response.json({
