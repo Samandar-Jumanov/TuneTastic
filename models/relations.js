@@ -18,7 +18,7 @@ ListenedMusic.belongsTo(Users , {
 
 Users.hasMany(ListenedMusic , {
     foreignKey :'userId',
-    as :'listendMusic'
+    as :'listenedMusic'
 })
 
 
