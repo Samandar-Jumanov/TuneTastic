@@ -18,16 +18,17 @@ const addToListenedMusic = async (request ,response , next ) =>{
         }
 
         const addedSong = await ListenedMusic.create({
-           title: "song.title",
+           title: song.title,
            userId : 1,
-           s3Key : "song.s3Key",
-           artist : "song.artist"
+           s3Key : song.s3Key,
+           artist : song.artist
 
         } , {transaction : t })
 
         await user.addListenedMusic(addedSong , {transaction : t })
-        await user.save()
+        await user.save();
         await t.commit();
+        
         return response.status(201).json({
             message :'Succes'
         })
