@@ -1,4 +1,4 @@
-const {S3Client , PutObjectCommand , GetObjectCommand} = require('@aws-sdk/client-s3');
+const {S3Client , PutObjectCommand , GetObjectCommand, DeleteObjectCommand} = require('@aws-sdk/client-s3');
 const { Users, Songs } = require('../models/relations');
 const uuid = require('uuid');
 const sequelize = require('../utils/db');
@@ -69,7 +69,6 @@ const getAllSongs = async (request , response , next ) =>{
       const command = new GetObjectCommand(params);
       const url = await getSignedUrl(s3, command, { expiresIn: 3600 })   
       song.s3Key = url 
-
     }
 
     return response.status(200).json({
@@ -82,11 +81,90 @@ const getAllSongs = async (request , response , next ) =>{
   }
 }
 
+const updateSong = async (request, response, next) => {
+  let t ;
+  try {
+    t = await sequelize.transaction();
+
+    const { userId, songId } = request.params;
+    const { title, artist } = request.body;
+
+    const user = await Users.findByPk(userId);
+
+    if (!user) {
+      return response.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    const song = await user.getSongs({
+      where: { Id: songId },
+    } , { transaction : t });
+
+    const songDb = await Songs.findByPk(songId)
+    if(songDb){
+      return response.status(404).json({
+        message :' Song not  found '
+      })
+    }
+
+    if (song.length === 0) {
+      return response.status(404).json({
+        message: "Song not found for the given user",
+      });
+    }
+    
+    await song.update({title : title , artist : artist} , { transaction : t })
+    await song[0].update({ title, artist } , { transaction : t });
+    await user.save()
+    await t.commit();
+    response.json(song[0]);
+
+  } catch (error) {
+    await t.rollback();
+    console.error(error);
+    response.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
+
+
+const deleteSong = async (request , response , next ) =>{
+  const {userId , songId } = request.params 
+  try {
+
+    const user = await Users.findByPk(userId);
+    const song = await Songs.findOne({ where: { id: songId, userId: user.id } });
+
+    if (!user || !song) {
+      return res.status(404).json({ message: 'User or song not found' });
+    }
+    
+    const params = {
+      Bucket : process.env.AWS_BUCKET_NAME,
+      Key : song.s3Key 
+    }
+    const command = new DeleteObjectCommand(params)
+    await s3.send(command)
+    await song.destroy();
+    await user.save();
+ 
+    res.json({ message: 'Song deleted successfully' });
+  } catch (error) {
+    console.log(error)
+    next(error)
+  }
+}
+
 
 module.exports = {
   uploadSong,
-  getAllSongs
+  getAllSongs,
+  updateSong,
+  deleteSong
 };
+
 
 
 
