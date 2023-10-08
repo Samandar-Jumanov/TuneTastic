@@ -3,6 +3,7 @@ const sequelize = require('./utils/db')
 const { usersRouter } = require('./routes/users')
 const { songsRouter } = require('./routes/songs')
 const cors = require('cors')
+const { listendMusicRouter } = require('./routes/listenedMusic')
 const app = express()
 
 //Connect database
@@ -21,7 +22,7 @@ sequelize.sync().then(()=>{
 
 app.use('/api/users', usersRouter)
 app.use('/api/songs', songsRouter)
-
+app.use('/api/listening-history', listendMusicRouter)
 
 app.listen(3001 , ()=>{
     console.log("Server started 3001")

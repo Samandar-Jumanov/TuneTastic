@@ -1,3 +1,4 @@
+const { ListenedMusic } = require("./listenedMusic");
 const { Songs } = require("./songs");
 const { Users } = require("./users");
 
@@ -11,9 +12,21 @@ Users.hasMany(Songs , {
     as :'songs'
 })
 
+ListenedMusic.belongsTo(Users , {
+    foreignKey :'userId'
+})
+
+Users.hasMany(ListenedMusic , {
+    foreignKey :'userId',
+    as :'listendMusic'
+})
+
+
+
 module.exports = {
     Songs , 
-    Users
+    Users,
+    ListenedMusic
 }
 
 

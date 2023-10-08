@@ -102,6 +102,7 @@ const updateSong = async (request, response, next) => {
     } , { transaction : t });
 
     const songDb = await Songs.findByPk(songId)
+
     if(songDb){
       return response.status(404).json({
         message :' Song not  found '
@@ -114,9 +115,10 @@ const updateSong = async (request, response, next) => {
       });
     }
     
-    await song.update({title : title , artist : artist} , { transaction : t })
+    await songDb.update({title : title , artist : artist} , { transaction : t })
     await song[0].update({ title, artist } , { transaction : t });
     await user.save()
+    await songDb.save();
     await t.commit();
     response.json(song[0]);
 
@@ -132,10 +134,12 @@ const updateSong = async (request, response, next) => {
 
 const deleteSong = async (request , response , next ) =>{
   const {userId , songId } = request.params 
+  let t ;
   try {
+     t = await sequelize.transaction();
 
     const user = await Users.findByPk(userId);
-    const song = await Songs.findOne({ where: { id: songId, userId: user.id } });
+    const song = await Songs.findOne({ where: { id: songId, userId: user.id } } , { transaction : t });
 
     if (!user || !song) {
       return res.status(404).json({ message: 'User or song not found' });
@@ -147,22 +151,54 @@ const deleteSong = async (request , response , next ) =>{
     }
     const command = new DeleteObjectCommand(params)
     await s3.send(command)
+
+    await user.removeSongs(song , { transaction : t });
     await song.destroy();
-    await user.save();
- 
+    await user.save()
+    await t.commit();
+
     res.json({ message: 'Song deleted successfully' });
   } catch (error) {
     console.log(error)
+    await t.rollback();
     next(error)
   }
 }
 
 
+const getUserCreatedSongs = async (request , response , next ) =>{
+  const {userId} = request.params 
+
+  try{
+
+    const user = await Users.findByPk(userId)
+    const allUserSongs = user.getSongs()
+
+    for( const song of  allUserSongs){
+      const params = {
+        Bucket : process.env.AWS_BUCKET_NAME,
+        Key : song.s3Key
+      }
+      const command = new GetObjectCommand(params);
+      const url = await getSignedUrl(s3, command, { expiresIn: 3600 })   
+      song.s3Key = url 
+    }
+
+    return response.status(200).json({
+      allUserSongs : allUserSongs
+    })
+  }catch(err){
+    console.log(err)
+    next(err)
+  }
+}
+
 module.exports = {
   uploadSong,
   getAllSongs,
   updateSong,
-  deleteSong
+  deleteSong,
+  getUserCreatedSongs
 };
 
 
