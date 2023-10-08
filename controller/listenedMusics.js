@@ -27,9 +27,7 @@ const addToListenedMusic = async (request ,response , next ) =>{
 
         await user.addListenedMusic(addedSong , {transaction : t })
         await user.save()
-        await song.save();
         await t.commit();
-
         return response.status(201).json({
             message :'Succes'
         })
