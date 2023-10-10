@@ -1,12 +1,12 @@
 # music
-Started to build
 
 
 # Main idea of project 
-I really interested in creating an aws-bucket project so i created it as  a muisc app
+I really interested in creating an aws-bucket project so i created it as  a music app
 The project can be used as a to upload music for an artist(based on roles ) 
 And can be used for user to hear it
-
+ # Role : artist
+ 
 # Account 
 /signup requirements : username email password  and role (will be chosen in client side )
 /login  requirements : password and email 
@@ -29,6 +29,22 @@ And can be used for user to hear it
 
 # And all songs can be got 
 /get-all-songs',  authRole , authToken , 
+
+
+# And for liseteners 
+
+# add listening history 
+/add  requirements :  songId , userId 
+
+# user get listened music 
+/get-all/:userId   requirements :  userId(request.params)
+
+# delete from history 
+/delete  requirements :  userId, songId  request.body 
+
+
+
+
 
 
 

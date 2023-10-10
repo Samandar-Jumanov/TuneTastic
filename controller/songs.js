@@ -1,4 +1,5 @@
-const {S3Client , PutObjectCommand , GetObjectCommand, DeleteObjectCommand} = require('@aws-sdk/client-s3');
+const {S3Client , PutObjectCommand ,
+GetObjectCommand, DeleteObjectCommand} = require('@aws-sdk/client-s3');
 const { Users, Songs } = require('../models/relations');
 const uuid = require('uuid');
 const sequelize = require('../utils/db');
