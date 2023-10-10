@@ -101,8 +101,6 @@ const Login = async (request , response , next ) =>{
 }
 
 
-
-
 module.exports = {
     SignUp,
     Login 
